@@ -1,5 +1,6 @@
 const http = require("http");
 const path = require("path");
+const fs = require("fs");
 const { program } = require("commander");
 
 program
@@ -11,7 +12,23 @@ program.parse(process.argv);
 
 const { host, port, cache } = program.opts();
 
-const server = http.createServer((req, res) => {});
+const server = http.createServer(async (req, res) => {
+  const code = req.url.slice(1);
+  const imagePath = path.join(cache, `${code}.jpg`);
+
+  switch (req.method) {
+    case "GET":
+      try {
+        const image = await fs.promises.readFile(imagePath);
+        res.writeHead(200, { "Content-Type": "image/jpeg" });
+        res.end(image);
+      } catch (error) {
+        res.writeHead(404, { "Content-Type": "text/plain" });
+        res.end("Not Found");
+      }
+      break;
+  }
+});
 
 server.listen(port, host, () => {
   console.log(`Server http://${host}:${port}/`);
