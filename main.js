@@ -27,6 +27,31 @@ const server = http.createServer(async (req, res) => {
         res.end("Not Found");
       }
       break;
+    case "PUT":
+      try {
+        const data = await new Promise((resolve, reject) => {
+          const chunks = [];
+          req.on("data", (chunk) => {
+            chunks.push(chunk);
+          });
+          req.on("end", () => {
+            resolve(Buffer.concat(chunks));
+          });
+          req.on("error", (error) => {
+            console.error("Error receiving data:", error);
+            reject(error);
+          });
+        });
+
+        await fs.promises.writeFile(imagePath, data);
+        res.writeHead(201, { "Content-Type": "text/plain" });
+        res.end("Created");
+      } catch (error) {
+        console.error("Error in PUT handler:", error);
+        res.writeHead(400, { "Content-Type": "text/plain" });
+        res.end("Bad Request");
+      }
+      break;
   }
 });
 
