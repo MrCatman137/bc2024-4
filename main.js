@@ -67,6 +67,10 @@ const server = http.createServer(async (req, res) => {
         }
       }
       break;
+    default:
+      res.writeHead(405, { "Content-Type": "text/plain" });
+      res.end("Method Not Allowed");
+      break;
   }
 });
 
