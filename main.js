@@ -52,6 +52,21 @@ const server = http.createServer(async (req, res) => {
         res.end("Bad Request");
       }
       break;
+    case "DELETE":
+      try {
+        await fs.promises.unlink(imagePath);
+        res.writeHead(200, { "Content-Type": "text/plain" });
+        res.end("Deleted");
+      } catch (error) {
+        if (error.code === "ENOENT") {
+          res.writeHead(404, { "Content-Type": "text/plain" });
+          res.end("Not Found");
+        } else {
+          res.writeHead(500, { "Content-Type": "text/plain" });
+          res.end("Internal Server Error");
+        }
+      }
+      break;
   }
 });
 
