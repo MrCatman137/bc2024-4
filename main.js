@@ -1,6 +1,7 @@
 const http = require("http");
 const path = require("path");
 const fs = require("fs");
+const superagent = require("superagent");
 const { program } = require("commander");
 
 program
@@ -23,8 +24,20 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { "Content-Type": "image/jpeg" });
         res.end(image);
       } catch (error) {
-        res.writeHead(404, { "Content-Type": "text/plain" });
-        res.end("Not Found");
+        if (error.code === "ENOENT") {
+          try {
+            const response = await superagent.get(`https://http.cat/${code}`);
+            await fs.promises.writeFile(imagePath, response.body);
+            res.writeHead(200, { "Content-Type": "image/jpeg" });
+            res.end(response.body);
+          } catch (fetchError) {
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            res.end("Not Found");
+          }
+        } else {
+          res.writeHead(500, { "Content-Type": "text/plain" });
+          res.end("Internal Server Error");
+        }
       }
       break;
     case "PUT":
